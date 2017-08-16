@@ -2,8 +2,10 @@ package com.zydemo.IPC_AIDL_demo.aidl;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
@@ -53,6 +55,7 @@ public class BookManagerService extends Service {
             //运行在 #服务端# binder线程池中，需处理并发问题。
             //故用到了CopyOnWriteArrayList
             mBookList.add(book);
+
         }
 
         @Override
@@ -112,6 +115,27 @@ public class BookManagerService extends Service {
 
         }
 
+        @Override
+        public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            //验证权限
+            int granted = checkCallingOrSelfPermission("com.zydemo.IPC_AIDL_demo.permission.ACCESS_BOOK_SERVICE");
+            if (granted == PackageManager.PERMISSION_DENIED){
+                return false;
+            }
+            //验证进程包名
+            String packageName = null;
+            String[] packages = getPackageManager().getPackagesForUid(getCallingUid());
+
+            if (packages != null && packages.length>0){
+                packageName = packages[0];
+            }
+
+            if (packageName == null || !packageName.startsWith("com.zydemo")){
+                return false;
+            }
+
+            return super.onTransact(code, data, reply, flags);
+        }
     };
 
     @Override

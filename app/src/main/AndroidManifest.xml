@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zydemo.IPC_AIDL_demo">
 
+    <!--声明一个服务绑定权限-->
+    <permission
+        android:name="com.zydemo.IPC_AIDL_demo.permission.ACCESS_BOOK_SERVICE"
+        android:protectionLevel="normal"/>
+
+    <!--获取权限-->
+    <uses-permission android:name="com.zydemo.IPC_AIDL_demo.permission.ACCESS_BOOK_SERVICE"/>
+
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,7 +27,8 @@
 
         <service
             android:name=".aidl.BookManagerService"
-            android:process=":remote"/>
+            android:process=":remote">
+        </service>
     </application>
 
 </manifest>
