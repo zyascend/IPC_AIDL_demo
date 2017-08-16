@@ -14,6 +14,7 @@ import com.zydemo.IPC_AIDL_demo.aidl.ISecurityCenter;
 import com.zydemo.IPC_AIDL_demo.aidl.SecurityCenterImpl;
 
 /**
+ *
  * Created by Administrator on 2016/12/15.
  */
 
@@ -40,8 +41,9 @@ public class BinderPoolActivity extends AppCompatActivity {
      * 在子线程中执行
      */
     private void doWork() {
+        //初始化连接池
         BinderPool binderPool = BinderPool.getInstance(BinderPoolActivity.this);
-
+        //获取对应的Binder
         IBinder securityBinder = binderPool.queryBinder(BinderPool.BINDER_SECURITY_CENTER);
         mSecurityCenter = SecurityCenterImpl.asInterface(securityBinder);
         Log.d(TAG, "visit SecurityCenter");
