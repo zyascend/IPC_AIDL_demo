@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private IOnNewBookArrivedListener mNewBookArrivedListener = new IOnNewBookArrivedListener.Stub() {
         @Override
         public void onNewBookArrived(Book book) throws RemoteException {
-            //在客户端的Binder线程池中执行
+            //在 #客户端# 的Binder线程池中执行
+            //所以需要handler来切换线程
             mHandler.obtainMessage(MESSAGE_NEW_BOOK_ARRIVED).sendToTarget();
         }
     };
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 示例调用服务端耗时方法的正确姿势
+     * 示例：调用服务端耗时方法的正确姿势
      */
     private void example(){
         new Thread(new Runnable() {

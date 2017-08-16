@@ -44,14 +44,14 @@ public class BookManagerService extends Service {
 
         @Override
         public List<Book> getBookList() throws RemoteException {
-            //运行在binder线程池中，需处理并发问题。
+            //运行在 #服务端# binder线程池中，需处理并发问题。
             // 故用到了CopyOnWriteArrayList
             return mBookList;
         }
         @Override
         public void addBook(Book book) throws RemoteException {
-            //运行在binder线程池中，需处理并发问题。
-            // 故用到了CopyOnWriteArrayList
+            //运行在 #服务端# binder线程池中，需处理并发问题。
+            //故用到了CopyOnWriteArrayList
             mBookList.add(book);
         }
 
@@ -71,10 +71,12 @@ public class BookManagerService extends Service {
         public void unregisterListener(IOnNewBookArrivedListener listener) throws RemoteException {
 
             //以下代码实际上无法达到解注册的目地
-            //对象(此处的listener)在跨进程的传输过程中，实际上是序列化与反序列化的过程
+            //对象(此处的listener)在跨进程的传输过程中，
+            //实际上是序列化与反序列化的过程
             //于是Binder把客户端传过来的对象转化成了新的对象
             //导致 mListeners.contains(listener) 始终为false
-//
+
+
 //            if (mListeners.contains(listener)){
 //                mListeners.remove(listener);
 //                Log.d(TAG, "unregister done");
@@ -88,13 +90,25 @@ public class BookManagerService extends Service {
 
             /**
              *  RemoteCallbackList的特点
-             * 1. 新生成的对象与旧对象的底层的Binder是同一个，就可以通过Binder找到新的listener并删除
-             * 2. 当客户端终止时，它自动移除客户端注册的listener
+             * 1. 由于底层binder是同一个不变，就通过当前Binder找到listener并删除
+             * 2. 当客户端进程终止时，它自动移除客户端注册的listener
              * 3. 它内部已实现了线程同步
              * 4. 他并不是一个List
              */
 
             mListeners.unregister(listener);
+            //plus：关于 mListeners.unregister(listener)的实现
+
+//            public boolean unregister(E callback) {
+//                synchronized (mCallbacks) {    //3.线程同步
+//                    Callback cb = mCallbacks.remove(callback.asBinder());
+//                    if (cb != null) {
+//                        cb.mCallback.asBinder().unlinkToDeath(cb, 0);
+//                        return true;
+//                    }
+//                    return false;
+//                }
+//            }
 
         }
 
@@ -141,6 +155,8 @@ public class BookManagerService extends Service {
     }
 
     private void onNewBookArrived(Book newBook) throws RemoteException {
+
+
         mBookList.add(newBook);
 //        for (int i = 0; i < mListeners.size(); i++) {
 //            IOnNewBookArrivedListener listener = mListeners.get(i);
@@ -154,6 +170,7 @@ public class BookManagerService extends Service {
             IOnNewBookArrivedListener listener = mListeners.getBroadcastItem(i);
             if (listener != null) {
                 try {
+                    //如果客户端的onNewBookArrived方法太耗时将引起服务端ANR
                     listener.onNewBookArrived(newBook);
                 } catch (RemoteException e) {
                     e.printStackTrace();
